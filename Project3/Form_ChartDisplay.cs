@@ -684,112 +684,122 @@ namespace Project3
 
         private void listBox_DownWaves_SelectedIndexChanged(object sender, EventArgs e)
         {
+            // Prevent actions during initial load of list box
             if (isInit2)
             {
                 isInit2 = false;
                 return;
             }
-            chart1.Invalidate();
-            var wave = listBox_DownWaves.SelectedItem as Wave;
-            addWaveAnnotations(wave);
+
+            chart1.Invalidate(); // Invalidate the chart to refresh it
+            var wave = listBox_DownWaves.SelectedItem as Wave; // Get the selected wave from the list
+            addWaveAnnotations(wave); // Add wave annotations to the chart
+
+            // Set the start and current prices for the wave
             startPrice = (double)wave.startPrice;
             currentPrice = stepPrice = (double)wave.endPrice;
+
+            // Display Fibonacci levels for the wave
             display_FibLevels(startPrice, currentPrice, wave.startIndex, wave.endIndex);
 
-            chart1.Update();
+            chart1.Update(); // Update the chart
         }
 
 
-        bool mouseDown = false;
+        bool mouseDown = false; // Flag to track if mouse is being pressed
+        RectangleAnnotation drawnAnnotation = null; // Variable to store the drawn rectangle annotation
+        int waveStart = -1; // Start index for the wave
+        int waveEnd = -1; // End index for the wave
 
-        RectangleAnnotation drawnAnnotation = null;
-        int waveStart = -1;
-        int waveEnd = -1;
+        Point startingPoint; // Starting point of the mouse click
+        bool isPeak = false; // Flag to indicate if the starting point is a peak
+        bool isValley = false; // Flag to indicate if the starting point is a valley
 
-        Point startingPoint;
-        bool isPeak = false;
-        bool isValley = false;
+        double startPrice = 0.0; // Start price of the wave
 
-        double startPrice = 0.0;
+        // Handle mouse down event to start drawing the wave
         private void chart1_MouseDown(object sender, MouseEventArgs e)
         {
             if (candlesticks == null || candlesticks.Count == 0 || currentFilter == null || currentFilter.Count == 0)
             {
-               
-                return;
+                return; // Return if no candlesticks are available
             }
 
-            mouseDown = true;
-            //clear peak valley annotations once user places mouse down
-            chart1.Annotations.Clear();
+            mouseDown = true; // Set mouse down flag to true
+            chart1.Annotations.Clear(); // Clear existing annotations
 
             var chart = (System.Windows.Forms.DataVisualization.Charting.Chart)sender;
-            var chartArea = chart.ChartAreas["ChartArea_Candlestick"];
+            var chartArea = chart.ChartAreas["ChartArea_Candlestick"]; // Get the chart area for candlestick chart
 
-            double xValue = chartArea.AxisX.PixelPositionToValue(e.X);
-            waveStart = (int)Math.Round(xValue);
+            double xValue = chartArea.AxisX.PixelPositionToValue(e.X); // Convert mouse X position to chart value
+            waveStart = (int)Math.Round(xValue); // Round to the nearest index for the start of the wave
 
-            //getting proper index for wave start
+            // Adjust for proper index of the wave start
             waveStart -= 1;
-            startingPoint = e.Location;
-            
-            // removing of margin offsets from the chart area to make sure location is accurate
+            startingPoint = e.Location; // Store starting point location
+
+            // Adjust for chart margin offsets to get accurate position
             var a = chartArea.InnerPlotPosition;
             var b = chartArea.Position;
 
             var plotX = e.X - chart1.ClientSize.Width * b.X / 100 - chart1.ClientSize.Width * a.X / 100;
             var plotY = e.Y - chart1.ClientSize.Height * b.Y / 100 - chart1.ClientSize.Height * a.Y / 100;
 
-            var x = chartArea.AxisX.PixelPositionToValue(plotX);
-            var y = chartArea.AxisY.PixelPositionToValue(plotY);
+            var x = chartArea.AxisX.PixelPositionToValue(plotX); // Convert adjusted X position to chart value
+            var y = chartArea.AxisY.PixelPositionToValue(plotY); // Convert adjusted Y position to chart value
 
-            //check if the starting candlestick is a peak or a valley
+            // Check if the starting candlestick is a peak or valley
             foreach (var peak in peakValleyList)
             {
                 if (peak.index == waveStart)
                 {
                     if (peak.peak)
                     {
-                        isPeak = true;
-
+                        isPeak = true; // It's a peak
                     }
                     else if (peak.valley)
                     {
-                        isValley = true;
+                        isValley = true; // It's a valley
                     }
                 }
             }
+
+            // Show a message if the wave doesn't start at a peak or valley
             if (!(isPeak || isValley))
             {
-                MessageBox.Show($"Wave must start at peak or valley: Start :{waveStart}", "invalid");
+                MessageBox.Show($"Wave must start at peak or valley: Start :{waveStart}", "Invalid");
                 mouseDown = false;
                 return;
             }
-            //choose start price as either the high or low depending on peak or valley
+
+            // Set the start price based on whether it's a peak or valley
             startPrice = (isPeak) ? (double)currentFilter[waveStart].High : (double)currentFilter[waveStart].Low;
-            y = startPrice;
+            y = startPrice; // Set the Y value for the rectangle
+
+            // Create a new rectangle annotation to represent the selected wave
             drawnAnnotation = new RectangleAnnotation
-            {//create a rectangle annotation
+            {
                 Name = "drawnRectangle",
                 AxisX = chartArea.AxisX,
                 AxisY = chartArea.AxisY,
-                LineColor = Color.Blue,
-                LineWidth = 2,
-                BackColor = Color.FromArgb(50, Color.Blue),
-                ClipToChartArea = chartArea.Name,
-                X = x,
-                Y = startPrice,
-                Width = 0,
-                Height = 0,
-                IsSizeAlwaysRelative = false,
+                LineColor = Color.Blue, // Set the border color to blue
+                LineWidth = 2, // Set the border width
+                BackColor = Color.FromArgb(50, Color.Blue), // Set background color with transparency
+                ClipToChartArea = chartArea.Name, // Clip annotation to chart area
+                X = x, // Set X position
+                Y = startPrice, // Set Y position
+                Width = 0, // Set initial width to 0
+                Height = 0, // Set initial height to 0
+                IsSizeAlwaysRelative = false, // Set fixed size
             };
 
-            chart1.Annotations.Add(drawnAnnotation);
+            chart1.Annotations.Add(drawnAnnotation); // Add the drawn annotation to the chart
         }
 
-        double currentPrice = 0.0;
+        double currentPrice = 0.0; // Current price during drawing
+
         /// <summary>
-        /// draw rectangle as the user drags the mouse
+        /// Draw the rectangle as the user drags the mouse
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -797,122 +807,131 @@ namespace Project3
         {
             if (candlesticks == null || candlesticks.Count == 0 || currentFilter == null || currentFilter.Count == 0)
             {
-                
-                return;
+                return; // Return if no candlesticks are available
             }
 
-            //if mouse is not down, or drawn annotation wasnt initialized, return
-            if (!mouseDown || drawnAnnotation ==null)
+            // Return if mouse is not down or the annotation wasn't initialized
+            if (!mouseDown || drawnAnnotation == null)
             {
                 return;
             }
+
             var chart = (System.Windows.Forms.DataVisualization.Charting.Chart)sender;
-            var chartArea = chart.ChartAreas["ChartArea_Candlestick"];
-            var currentPoint = e.Location;
-            double x0 = chartArea.AxisX.PixelPositionToValue(startingPoint.X);
-            double y0 = startPrice;
+            var chartArea = chart.ChartAreas["ChartArea_Candlestick"]; // Get the chart area for candlestick chart
+            var currentPoint = e.Location; // Get current mouse position
 
-            //double y0 = chartArea.AxisY.PixelPositionToValue(startingPoint.Y);
-            double x1 = chartArea.AxisX.PixelPositionToValue(currentPoint.X);
-            double y1 = chartArea.AxisY.PixelPositionToValue(currentPoint.Y);
+            double x0 = chartArea.AxisX.PixelPositionToValue(startingPoint.X); // Get starting X position
+            double y0 = startPrice; // Starting Y position is the start price
 
+            double x1 = chartArea.AxisX.PixelPositionToValue(currentPoint.X); // Get current X position
+            double y1 = chartArea.AxisY.PixelPositionToValue(currentPoint.Y); // Get current Y position
 
+            var dy = y1 - y0; // Calculate the change in Y position
 
-            var dy = y1 - y0;
+            // If the drawn annotation exists, calculate width and height based on mouse movement
             if (drawnAnnotation != null)
-            {//calculate the width and height of the rectangle
+            {
                 if (x1 >= x0)
                 {
                     drawnAnnotation.X = x0;
                     drawnAnnotation.Width = x1 - x0;
                 }
                 else
-                {//if the x1 is less than x0, set the width to be negative
+                {
                     drawnAnnotation.X = x1;
                     drawnAnnotation.Width = x0 - x1;
                 }
+
                 if (dy >= 0)
-                {// if the y1 is greater than y0, set the height to be positive
+                {
                     drawnAnnotation.Y = y0;
                     drawnAnnotation.Height = dy;
-
                 }
                 else
-                {//if the y1 is less than y0, set the height to be negative
+                {
                     drawnAnnotation.Y = y1;
                     drawnAnnotation.Height = -(dy);
                 }
             }
 
-            //calculate the current end candlestick index
+            // Calculate the current end candlestick index based on the drawn width
             waveEnd = (!(drawnAnnotation == null)) ? (int)Math.Round(drawnAnnotation.Width + waveStart) : -1;
 
-            //calculate current price depending on up/down wave
+            // Calculate the current price based on the wave's direction
             currentPrice = (dy >= 0) ? startPrice + drawnAnnotation.Height : startPrice - drawnAnnotation.Height;
 
-            //clear chart if current wave is not valid
+            // Clear chart annotations and strip lines if the wave is not valid
             chart1.Annotations.Clear();
             chartArea.AxisY.StripLines.Clear();
 
-            //draw wave if it is valid
+            // Draw wave if it is valid
             if (determineValidWave(waveStart, waveEnd))
             {
-                display_FibLevels(startPrice, currentPrice, waveStart, waveEnd);
-                
-                chart1.Annotations.Add(drawnAnnotation);
+                display_FibLevels(startPrice, currentPrice, waveStart, waveEnd); // Display Fibonacci levels
+                chart1.Annotations.Add(drawnAnnotation); // Add the drawn annotation to the chart
             }
         }
         /// <summary>
-        /// mouse up event, check if the wave is valid and add it to the chart
-        /// mouse dowun event, check if the wave is valid and add it to the chart
+        /// Mouse up event, checks if the wave is valid and adds it to the chart.
+        /// </summary>
+        /// <param name="sender">The object that triggered the event.</param>
+        /// <param name="e">Mouse event data.</param>
         private void chart1_MouseUp(object sender, MouseEventArgs e)
         {
             if (candlesticks == null || candlesticks.Count == 0 || currentFilter == null || currentFilter.Count == 0)
             {
-                
-                return;
+                return; // Exit if there are no candlesticks or the filter is empty
             }
 
-            mouseDown = false;
+            mouseDown = false; // Set the mouseDown flag to false as the mouse button has been released
             var chart = (System.Windows.Forms.DataVisualization.Charting.Chart)sender;
-            var chartArea = chart.ChartAreas["ChartArea_Candlestick"];
+            var chartArea = chart.ChartAreas["ChartArea_Candlestick"]; // Get the chart area
 
+            // Calculate the end index of the wave based on the drawn annotation width
             waveEnd = (drawnAnnotation != null) ? (int)Math.Round(drawnAnnotation.Width + waveStart) : 0;
+
+            // Check if the wave is valid
             if (!determineValidWave(waveStart, waveEnd))
             {
+                // Show message if wave is invalid
                 MessageBox.Show("Ended on an invalid wave, a valid wave will appear when you are in the right position", "Invalid Wave");
-                chart.Annotations.Clear();
-                chartArea.AxisY.StripLines.Clear();
-
+                chart.Annotations.Clear(); // Clear all annotations
+                chartArea.AxisY.StripLines.Clear(); // Clear strip lines
             }
             else
-            {//if the wave is valid, add it to the chart
+            {
+                // If the wave is valid, add it to the chart
                 MessageBox.Show($"Wave selected: Start = {waveStart}, End = {waveEnd}, start price: {startPrice}, end price: {currentPrice}", "Debug Info");
 
+                // Display Fibonacci levels and create line annotation
                 display_FibLevels(startPrice, (double)currentPrice, waveStart, waveEnd);
                 createLineAnnotation(waveStart, waveEnd, startPrice, currentPrice);
 
+                // Remove the drawn annotation and re-add it
                 chart1.Annotations.Remove(drawnAnnotation);
                 chart1.Annotations.Add(drawnAnnotation);
             }
         }
 
 
-        List<double> levels = new List<double>();
+        List<double> levels = new List<double>(); // List to store Fibonacci levels
+
         /// <summary>
-        /// calculate fibonacci levels given the current starting and end price, add line annotations to represent them
+        /// Calculate Fibonacci levels based on the starting and ending price, then add line annotations to represent them.
         /// </summary>
-        /// <param name="startprice"></param>
-        /// <param name="endPrice"></param>
+        /// <param name="startprice">Starting price of the wave.</param>
+        /// <param name="endPrice">Ending price of the wave.</param>
+        /// <param name="waveStart">Index of the start of the wave.</param>
+        /// <param name="waveEnd">Index of the end of the wave.</param>
         private void display_FibLevels(double startprice, double endPrice, int waveStart, int waveEnd)
         {
-            //calculate range and margin
+            // Calculate the range and margin for Fibonacci levels
             var range = Math.Abs(endPrice - startprice);
             var margin = range * 0.01;
-            var area = chart1.ChartAreas["ChartArea_Candlestick"];
-            area.AxisY.StripLines.Clear();
+            var area = chart1.ChartAreas["ChartArea_Candlestick"]; // Get the chart area
+            area.AxisY.StripLines.Clear(); // Clear previous strip lines
 
-            //clear previous line annotations if there were any
+            // Clear any previous line annotations
             var lines = chart1.Annotations.OfType<LineAnnotation>().ToList();
             if (lines.Count > 0)
             {
@@ -922,182 +941,197 @@ namespace Project3
                 }
             }
 
-            //delete existing text annotations for fib tags
+            // Remove existing text annotations for Fibonacci tags
             var existingFibAnn = chart1.Annotations.OfType<TextAnnotation>().Where(a => a.Tag?.ToString() == "fib").ToList();
             if (existingFibAnn.Count > 0)
             {
-                foreach (var ann in existingFibAnn) { chart1.Annotations.Remove(ann); }
+                foreach (var ann in existingFibAnn)
+                {
+                    chart1.Annotations.Remove(ann);
+                }
             }
+
+            // Define the Fibonacci percentages to calculate levels
             double[] fib_percents = { 0d, 0.236d, 0.382d, 0.5d, 0.618d, 0.764d, 1d };
 
-            levels?.Clear();
-            int i = fib_percents.Count() -1;
-            double x0 = chart1.Series[0].Points[waveStart].XValue;
-            double x1 = chart1.Series[0].Points[waveEnd].XValue;
-            double width = x1 - x0;   
+            levels?.Clear(); // Clear any previous levels
+            int i = fib_percents.Count() - 1; // Start from the highest Fibonacci level
+            double x0 = chart1.Series[0].Points[waveStart].XValue; // Get X value for start of the wave
+            double x1 = chart1.Series[0].Points[waveEnd].XValue; // Get X value for end of the wave
+            double width = x1 - x0; // Calculate the width between start and end points
 
-            //for each fibonacci level, create a horizontal line annotation at that level
+            // For each Fibonacci level, create a horizontal line annotation
             foreach (var percent in fib_percents)
             {
-                double level = 0;
-                if (startprice <= endPrice)
-                {
-                    level = startprice + (range * percent);
-                }
-                else
-                {
-                    level = startprice - (range * percent);
-                }
+                double level = (startprice <= endPrice)
+                    ? startprice + (range * percent) // For upward waves
+                    : startprice - (range * percent); // For downward waves
 
+                // Create a strip line for the Fibonacci level
                 var strip = new StripLine
                 {
-                    IntervalOffset = level,
-                    BorderColor = Color.Purple,
-                    BorderWidth = 2,
-                    BorderDashStyle = ChartDashStyle.Solid,
-                    BackColor = Color.Transparent,
+                    IntervalOffset = level, // Set the offset for the strip line
+                    BorderColor = Color.Purple, // Set the color for the strip line
+                    BorderWidth = 2, // Set the border width
+                    BorderDashStyle = ChartDashStyle.Solid, // Set the line style
+                    BackColor = Color.Transparent, // Set background color to transparent
                 };
-                area.AxisY.StripLines.Add(strip);
+                area.AxisY.StripLines.Add(strip); // Add the strip line to the Y-axis
 
-                //add labels (text annotation) for each fib level
+                // Create a text annotation to label the Fibonacci level
                 var textAnn = new TextAnnotation()
                 {
-                    Name = $"fib {i}",
-                    AxisX = area.AxisX,
-                    AxisY = area.AxisY,
-                    Tag = "fib",
-                    Text = $"{fib_percents[i] * 100}%",
-                    AnchorX = waveEnd,
-                    AnchorY = level,
+                    Name = $"fib {i}", // Name the annotation based on the level index
+                    AxisX = area.AxisX, // Set the X-axis for the annotation
+                    AxisY = area.AxisY, // Set the Y-axis for the annotation
+                    Tag = "fib", // Tag the annotation as "fib"
+                    Text = $"{fib_percents[i] * 100}%", // Label the level with its percentage
+                    AnchorX = waveEnd, // Anchor the label to the end of the wave
+                    AnchorY = level, // Position the label at the Fibonacci level
                 };
-                chart1.Annotations.Add(textAnn);
-                i--;
+                chart1.Annotations.Add(textAnn); // Add the annotation to the chart
+                i--; // Decrease the index for the next Fibonacci level
             }
 
-            
-            double leftX = waveStart;
-
+            // Add the calculated Fibonacci levels to the list
             foreach (var percent in fib_percents)
             {
                 levels.Add(startprice + (range * percent));
             }
-            //update confirmation label
-            label_Confirmations.Text = calculateConfirmations(margin, levels, waveStart, waveEnd).ToString();
 
+            // Update the confirmation label with the number of confirmations
+            label_Confirmations.Text = calculateConfirmations(margin, levels, waveStart, waveEnd).ToString();
         }
 
-        List<Tuple<int, double>> confirmations;
+        List<Tuple<int, double>> confirmations; // List to store confirmation data
 
+        /// <summary>
+        /// Calculate the number of confirmations by checking if the candlesticks' prices match Fibonacci levels within the margin.
+        /// </summary>
+        /// <param name="margin">The allowed margin for comparison.</param>
+        /// <param name="fib_levels">The calculated Fibonacci levels.</param>
+        /// <param name="waveStart">The start index of the wave.</param>
+        /// <param name="waveEnd">The end index of the wave.</param>
+        /// <returns>The number of confirmations that match the Fibonacci levels.</returns>
+     
         private int calculateConfirmations(double margin, List<double> fib_levels, int waveStart, int waveEnd)
         {
-            //if list is null create new list, otherwise clear it
+            // Create a new list if the confirmations list is null, or clear it if it's not
             if (confirmations == null)
             {
-                confirmations = new List<Tuple<int, double>>();
+                confirmations = new List<Tuple<int, double>>(); // Initialize the list
             }
             else
-            {//clear the list
-                confirmations.Clear();
+            {
+                confirmations.Clear(); // Clear previous confirmations
             }
-            //iterate through each candlestick and each fibonacci level to see if any values are within range.
-            int count = 0;
+
+            int count = 0; // Variable to count the number of confirmations
+
+            // Iterate through each candlestick and check if its price matches any Fibonacci level
             for (int i = waveStart; i <= waveEnd; i++)
             {
                 double high = (double)currentFilter[i].High;
                 double low = (double)currentFilter[i].Low;
                 double open = (double)currentFilter[i].Open;
                 double close = (double)currentFilter[i].Close;
+
                 foreach (var level in fib_levels)
                 {
-                    //check OHLC is within 1% of fib level
-                    if (high >= level - margin && high <= level + margin) {
-                        count++;
-                        var conf = Tuple.Create(i, high);
-                        confirmations.Add(conf); }
-
-                    else if (low >= level - margin && low <= level + margin) {
-                        count++;
-                        var conf = Tuple.Create(i, low);
+                    // Check if any of the OHLC prices are within the Fibonacci level margin
+                    if (high >= level - margin && high <= level + margin)
+                    {
+                        count++; // Increment the confirmation count
+                        var conf = Tuple.Create(i, high); // Store the confirmation for the high price
                         confirmations.Add(conf);
                     }
-
-                    else if (close >= level - margin && close <= level + margin) {
-                        count++;
-                        var conf = Tuple.Create(i, close);
-                        confirmations.Add(conf); ; }
-
-                    else if (open >= level - margin && open <= level + margin) {
-                        count++;
-                        var conf = Tuple.Create(i, open);
+                    else if (low >= level - margin && low <= level + margin)
+                    {
+                        count++; // Increment the confirmation count
+                        var conf = Tuple.Create(i, low); // Store the confirmation for the low price
                         confirmations.Add(conf);
                     }
-
+                    else if (close >= level - margin && close <= level + margin)
+                    {
+                        count++; // Increment the confirmation count
+                        var conf = Tuple.Create(i, close); // Store the confirmation for the close price
+                        confirmations.Add(conf);
+                    }
+                    else if (open >= level - margin && open <= level + margin)
+                    {
+                        count++; // Increment the confirmation count
+                        var conf = Tuple.Create(i, open); // Store the confirmation for the open price
+                        confirmations.Add(conf);
+                    }
                 }
+            }
 
-            }
-            //if there are confirmations, draw them
+            // Draw the confirmation annotations if there are any
             if (confirmations != null)
-            {   //draw the confirmation annotations
-                confirmationAnnotations(confirmations);
+            {
+                confirmationAnnotations(confirmations); // Call to draw the annotations
             }
-            return count;
+
+            return count; // Return the number of confirmations
         }
 
         /// <summary>
-        /// Draw the confirmation annotations 
+        /// Draw the confirmation annotations for each confirmed price match.
         /// </summary>
-        /// <param name="confirmations"></param>
+        /// <param name="confirmations">The list of confirmations to annotate.</param>
         private void confirmationAnnotations(List<Tuple<int, double>> confirmations)
         {
-            //remove existing annotations
+            // Remove existing confirmation annotations
             var existingConfirmations = chart1.Annotations.OfType<TextAnnotation>().Where(a => a.Tag?.ToString() == "confirmation").ToList();
             if (confirmations.Count > 0)
             {
                 foreach (var ann in existingConfirmations)
                 {
-                    chart1.Annotations.Remove(ann);
+                    chart1.Annotations.Remove(ann); // Remove old confirmations
                 }
             }
 
-            //make a text annotation for each confirmation found
+            // Create a text annotation for each confirmation
             foreach (var value in confirmations)
             {
                 var annotation = new TextAnnotation()
                 {
-                    Tag = "confirmations",
-                    AxisX = chart1.ChartAreas["ChartArea_Candlestick"].AxisX,
-                    AxisY = chart1.ChartAreas["ChartArea_Candlestick"].AxisY,
-
-                    AnchorX = value.Item1 + 1,
-                    AnchorY = value.Item2,
-                    Text = "C",
-
+                    Tag = "confirmations", // Tag the annotation as a confirmation
+                    AxisX = chart1.ChartAreas["ChartArea_Candlestick"].AxisX, // Set X-axis
+                    AxisY = chart1.ChartAreas["ChartArea_Candlestick"].AxisY, // Set Y-axis
+                    AnchorX = value.Item1 + 1, // Set X position to the confirmation's index
+                    AnchorY = value.Item2, // Set Y position to the confirmation's price
+                    Text = "C", // Set the text for the annotation
                 };
-                chart1.Annotations.Add(annotation);
+                chart1.Annotations.Add(annotation); // Add the annotation to the chart
             }
 
         }
         double stepPrice = 0.0;
+        /// <summary>
+        /// Handles the simulate button click event, toggling the simulation state.
+        /// </summary>
+        /// <param name="sender">The object that triggered the event.</param>
+        /// <param name="e">Event data for the button click.</param>
         private void button_Simulate_Click(object sender, EventArgs e)
         {
             if (candlesticks == null || candlesticks.Count == 0 || currentFilter == null || currentFilter.Count == 0)
             {
-                
-                return;
+                return; // Return if there are no candlesticks or the filter is empty
             }
 
+            // Toggle the timer control on or off for simulation
+            stepPrice = currentPrice; // Store the current price as the step price
+            timer_Simulate.Enabled = !timer_Simulate.Enabled; // Enable/Disable the timer based on its current state
 
-            //turn on timer control
-            stepPrice = currentPrice;
-            timer_Simulate.Enabled = !timer_Simulate.Enabled;
-
+            // Change the button text based on whether the timer is running
             if (timer_Simulate.Enabled)
             {
-                button_Simulate.Text = "Stop";
+                button_Simulate.Text = "Stop"; // Change text to "Stop" when the timer is enabled
             }
             else
             {
-                button_Simulate.Text = "Start";
+                button_Simulate.Text = "Start"; // Change text to "Start" when the timer is disabled
             }
         }
         double stepSize = 0.20;
