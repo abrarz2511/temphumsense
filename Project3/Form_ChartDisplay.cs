@@ -41,17 +41,17 @@ namespace Project3
     //// Partial class declaration for the main form, inheriting from Form
     public partial class Form_ChartDisplay : Form
     {
-        
-        public int count = 0;
-        List<Wave> waves;  /// List of up waves 
-        List<Wave> upwaves; // List of down waves 
-        List<Wave> downwaves;
-        public String Path;
-        public List<Candlestick> candlesticks;    // candlesticks filtered by date
-        public List<Candlestick> currentFilter;
-        DATACANDLESTICK reader;
-        public List<Smartcandlestick> peakValleyList;
-        
+
+        public int count = 0; // Variable for tracking candlestick count
+        List<Wave> waves; // List to store up waves
+        List<Wave> upwaves; // List to store up waves
+        List<Wave> downwaves; // List to store down waves
+        public String Path; // Path of the loaded file
+        public List<Candlestick> candlesticks; // List of candlesticks filtered by date
+        public List<Candlestick> currentFilter; // List of filtered candlesticks based on date range
+        DATACANDLESTICK reader; // Instance of stock reader class for file reading
+        public List<Smartcandlestick> peakValleyList; // List of peaks and valleys
+
 
 
         public Form_ChartDisplay()
@@ -92,36 +92,31 @@ namespace Project3
         // Load and process the file
         private void LoadAndProcessFile()
         {
-            reader = new DATACANDLESTICK(); //create stock reader class to do the file reading
+            reader = new DATACANDLESTICK(); // Create stock reader instance for file reading
 
-            loadAndDisplay();            //load and display the chart
+            loadAndDisplay(); // Load and display the chart
 
             peakValleyList = findPeakValley(currentFilter, 1); // Find the peaks and valleys
             Show();
-            showAnnotations();
-            updateWaves();
+            showAnnotations(); // Show annotations on the chart
+            updateWaves(); // Update the waves
         }
 
         public Form_ChartDisplay(DateTime startDate, DateTime endDate, string fileName)
         {
 
-            //create stock reader class to do the file reading
-            reader = new DATACANDLESTICK();
-
+            reader = new DATACANDLESTICK(); // Create stock reader instance for file reading
             InitializeComponent();
-            dateTimePicker_StartDate.Value = startDate;//initilazing the value to the start date
-            dateTimePicker_EndDate.Value = endDate;
-            Path = fileName;
+            dateTimePicker_StartDate.Value = startDate; // Initialize start date
+            dateTimePicker_EndDate.Value = endDate; // Initialize end date
+            Path = fileName; // Assign file path
 
-
-            loadAndDisplay();
-            
-            peakValleyList = findPeakValley(currentFilter, 1);
-
+            loadAndDisplay(); // Load and display the chart
+            peakValleyList = findPeakValley(currentFilter, 1); // Find the peaks and valleys
 
             Show();
-            showAnnotations();
-            updateWaves();
+            showAnnotations(); // Show annotations
+            updateWaves(); // Update the waves
         }
 
 
@@ -137,14 +132,14 @@ namespace Project3
         /// <returns>List of Candlesticks loaded from the file.</returns>
         private List<Candlestick> LoadTicker(string fileName)
         {
-            List<Candlestick> listofCandlesticks = reader.ReadCandlesticksFromFile(fileName);
+            List<Candlestick> listofCandlesticks = reader.ReadCandlesticksFromFile(fileName); // Read candlesticks from file
             // Get the first and second candlestick dates to check if list needs to be reversed
             var first = listofCandlesticks[0].Date;
             var second = listofCandlesticks[1].Date;
             // If the first date is later than the second, reverse the list
             if (first > second)
             {
-                listofCandlesticks.Reverse();
+                listofCandlesticks.Reverse(); // Reverse the list to maintain chronological order
             }
             return listofCandlesticks;
 
@@ -174,14 +169,12 @@ namespace Project3
         /// </summary>
         public void displayStock()
         {
-            //filtering candlesticks
+            // Filter candlesticks based on date range
             var filteredCandlesticks = FilterCandlesticksByDate(candlesticks, dateTimePicker_StartDate.Value, dateTimePicker_EndDate.Value);
-            currentFilter = filteredCandlesticks;
-            //normalizeing chart
-            NormalizeChart(filteredCandlesticks);
-            //bind chart to the list of filtered candlesticks
-            chart1.DataSource = filteredCandlesticks;
-            chart1.DataBind();
+            currentFilter = filteredCandlesticks; // Assign filtered candlesticks
+            NormalizeChart(filteredCandlesticks); // Normalize the chart based on the candlesticks
+            chart1.DataSource = filteredCandlesticks; // Bind the filtered candlesticks to the chart
+            chart1.DataBind(); // Refresh the chart
         }
 
         ///filters the candlesticks by the start date and end date
@@ -270,7 +263,7 @@ namespace Project3
 
 
         /// <summary>
-        /// update peakvalley list when margin has been changed, also update the waves
+        /// Updates the peakvalley list when the margin has been changed, also updates the waves.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -282,14 +275,11 @@ namespace Project3
                 return;
             }
 
-            //update peakvalley list and wave list
-            label_Margin.Text = hScrollBar_Margin.Value.ToString();
-            peakValleyList = findPeakValley(currentFilter, hScrollBar_Margin.Value);
-            chart1.Annotations.Clear();//clear the chart annotations
-            showAnnotations();
-
-
-            updateWaves();
+            label_Margin.Text = hScrollBar_Margin.Value.ToString(); // Update the margin label
+            peakValleyList = findPeakValley(currentFilter, hScrollBar_Margin.Value); // Update peakvalley list
+            chart1.Annotations.Clear(); // Clear the chart annotations
+            showAnnotations(); // Show annotations
+            updateWaves(); // Update waves
             isInit1 = true;
             isInit2 = true;
         }
@@ -451,58 +441,60 @@ namespace Project3
         /// <returns></returns>
         public List<Wave> FindValidWaves(List<Smartcandlestick> peakList)
         {
+            // Initialize a list to store valid waves
             var waves = new List<Wave>();
+
+            // Loop through the peak list to find potential start points for waves
             for (int i = 0; i < peakList.Count; i++)
             {
-                var start = peakList[i];
+                var start = peakList[i]; // Get the start peak or valley
 
-                //test every other peak and valley to see if its possible valid wave
+                // Loop through the remaining peaks and valleys to find matching end points for waves
                 for (int j = i + 1; j < peakList.Count; j++)
                 {
-                    bool isValid = true;
-                    decimal StartPrice = 0;
-                    decimal EndPrice = 0;
-                    var end = peakList[j];
-                    bool up = true;
-                    bool down = true;
+                    bool isValid = true; // Flag to indicate if the wave is valid
+                    decimal StartPrice = 0; // Price at the start of the wave
+                    decimal EndPrice = 0; // Price at the end of the wave
+                    var end = peakList[j]; // Get the end peak or valley
+                    bool up = true; // Flag to check if it's an up wave
+                    bool down = true; // Flag to check if it's a down wave
 
-                    //if down wave
+                    // Check for down wave (start is a peak, end is a valley)
                     if (start.peak && end.valley)
                     {
-                        StartPrice = currentFilter[start.index].High;
-                        EndPrice = currentFilter[end.index].Low;
-                        up = false;
-                        down = true;
+                        StartPrice = currentFilter[start.index].High; // Set start price from the peak's high value
+                        EndPrice = currentFilter[end.index].Low; // Set end price from the valley's low value
+                        up = false; // Set up flag to false since it's a down wave
+                        down = true; // Set down flag to true
 
-                        //check if any candlesticks break the validity
+                        // Check if any candlesticks between the start and end break the validity of the wave
                         for (int k = start.index + 1; k < end.index; k++)
                         {
                             if (currentFilter[k].High > StartPrice || currentFilter[k].Low < EndPrice)
                             {
-                                isValid = false;
+                                isValid = false; // Mark as invalid if any candlestick breaks the wave
                             }
                         }
                     }
-
-                    //if upwave
+                    // Check for up wave (start is a valley, end is a peak)
                     else if (start.valley && end.peak)
                     {
-                        StartPrice = currentFilter[start.index].Low;
-                        EndPrice = currentFilter[end.index].High;
-                        up = true;
-                        down = false;
+                        StartPrice = currentFilter[start.index].Low; // Set start price from the valley's low value
+                        EndPrice = currentFilter[end.index].High; // Set end price from the peak's high value
+                        up = true; // Set up flag to true since it's an up wave
+                        down = false; // Set down flag to false
 
-                        //check validity
+                        // Check if any candlesticks between the start and end break the validity of the wave
                         for (int k = start.index + 1; k < end.index; k++)
                         {
                             if (currentFilter[k].High > EndPrice || currentFilter[k].Low < StartPrice)
                             {
-                                isValid = false;
+                                isValid = false; // Mark as invalid if any candlestick breaks the wave
                             }
                         }
                     }
 
-                    //if there is a valid up wave add it to the list
+                    // If the wave is valid and it's an up wave, add it to the list
                     if (up && isValid && !down)
                     {
                         waves.Add(new Wave
@@ -513,13 +505,12 @@ namespace Project3
                             endIndex = end.index,
                             startDate = start.date,
                             endDate = end.date,
-                            up = true,
-                            down = false,
-                            displayDate = start.date.ToShortDateString() + "-" + end.date.ToShortDateString()
-
+                            up = true, // Indicate it's an up wave
+                            down = false, // Indicate it's not a down wave
+                            displayDate = start.date.ToShortDateString() + "-" + end.date.ToShortDateString() // Display the date range
                         });
                     }
-                    //if there is a valid down wave add it to the list
+                    // If the wave is valid and it's a down wave, add it to the list
                     else if (!up && isValid && down)
                     {
                         waves.Add(new Wave
@@ -530,13 +521,15 @@ namespace Project3
                             endIndex = end.index,
                             startDate = start.date,
                             endDate = end.date,
-                            up = false,
-                            down = true,
-                            displayDate = start.date.ToShortDateString() + "-" + end.date.ToShortDateString()
+                            up = false, // Indicate it's not an up wave
+                            down = true, // Indicate it's a down wave
+                            displayDate = start.date.ToShortDateString() + "-" + end.date.ToShortDateString() // Display the date range
                         });
                     }
                 }
             }
+
+            // Return the list of valid waves
             return waves;
         }
 
@@ -548,46 +541,57 @@ namespace Project3
         /// </summary>
         /// <param name="wave"></param>
         public void addWaveAnnotations(Wave wave)
-        {//clear existing annotations
+        {// Clear any existing annotations from the chart
             chart1.Annotations.Clear();
 
-
-            //calculate the start and end index of the wave
+            // Calculate the start and end index of the wave (with an offset of +1 to adjust for zero-based indexing)
             var startIndex = wave.startIndex + 1;
             var endIndex = wave.endIndex + 1;
 
-
-            //calculate the width and height of the rectangle
+            // Calculate the width and height of the rectangle annotation
+            // Width is the absolute difference between the start and end indices
             var width = Math.Abs(startIndex - endIndex);
+
+            // Height is the absolute difference between the start and end prices
             var height = Math.Abs((double)wave.endPrice - (double)wave.startPrice);
-            double x = Math.Min(startIndex, endIndex);
-            double y = Math.Min((double)wave.startPrice, (double)wave.endPrice);
 
+            // Determine the X and Y coordinates for the rectangle (the lower-left corner of the rectangle)
+            double x = Math.Min(startIndex, endIndex); // X is the smaller index (start or end)
+            double y = Math.Min((double)wave.startPrice, (double)wave.endPrice); // Y is the smaller price (start or end)
 
-            //create a rectangle annotation
+            // Create a rectangle annotation for the chart
             RectangleAnnotation annotation = new RectangleAnnotation
             {
-                AxisX = chart1.ChartAreas[0].AxisX,
-                AxisY = chart1.ChartAreas[0].AxisY,
-                Width = width,
-                Height = height,
-                X = x,
-                Y = y,
-                LineWidth = 2,
-                LineColor = Color.Black,
-                IsSizeAlwaysRelative = false,
+                AxisX = chart1.ChartAreas[0].AxisX, // Set the X axis for the annotation
+                AxisY = chart1.ChartAreas[0].AxisY, // Set the Y axis for the annotation
+                Width = width, // Set the calculated width
+                Height = height, // Set the calculated height
+                X = x, // Set the X coordinate
+                Y = y, // Set the Y coordinate
+                LineWidth = 2, // Set the border line width of the rectangle
+                LineColor = Color.Black, // Set the border color of the rectangle to black
+                IsSizeAlwaysRelative = false, // Set the size of the rectangle to be fixed (not relative)
             };
-            //set the color of the rectangle based on the wave direction
+
+            // Set the background color of the rectangle based on the direction of the wave (up or down)
             if (wave.up)
             {
+                // If the wave is up, set the rectangle's background color to green with 50% transparency
                 annotation.BackColor = Color.FromArgb(50, Color.Green);
             }
             else
             {
+                // If the wave is down, set the rectangle's background color to red with 50% transparency
                 annotation.BackColor = Color.FromArgb(50, Color.Red);
             }
+
+            // Ensure the annotation is clipped within the chart area
             annotation.ClipToChartArea = chart1.ChartAreas[0].Name;
+
+            // Make the annotation visible
             annotation.Visible = true;
+
+            // Add the created annotation to the chart's annotations collection
             chart1.Annotations.Add(annotation);
         }
 
@@ -622,9 +626,12 @@ namespace Project3
 
 
         /// <summary>
-        /// create a line annotation starting at the start of the wave to the end of the wave
+        /// Create a line annotation starting at the start of the wave to the end of the wave.
         /// </summary>
-        /// <param name="wave"></param>
+        /// <param name="startIndex">The starting index of the wave.</param>
+        /// <param name="endIndex">The ending index of the wave.</param>
+        /// <param name="startprice">The starting price of the wave.</param>
+        /// <param name="endprice">The ending price of the wave.</param>
         public void createLineAnnotation(int startIndex, int endIndex, double startprice, double endprice)
         {
             int width = Math.Abs(startIndex + endIndex);
@@ -632,17 +639,17 @@ namespace Project3
             var area = chart1.ChartAreas["ChartArea_Candlestick"];
             var lineAnnotation = new LineAnnotation()
             {
-                AxisX = area.AxisX,
-                AxisY = area.AxisY,
-                Name = "diag",
-                X = startIndex + 1,
-                Y = startPrice,
-                Width = width,
-                Height = -height,
-                LineColor = Color.Green,
-                LineWidth = 2,
-                IsSizeAlwaysRelative = true,
-                ClipToChartArea = area.Name,
+                AxisX = area.AxisX, // X-axis of the chart
+                AxisY = area.AxisY, // Y-axis of the chart
+                Name = "diag", // Name of the annotation
+                X = startIndex + 1, // X position of the annotation, adjusted for zero-indexing
+                Y = startprice, // Y position based on the start price
+                Width = width, // Set the calculated width
+                Height = -height, // Set the height (negative for descending line)
+                LineColor = Color.Green, // Set line color to green
+                LineWidth = 2, // Set line width
+                IsSizeAlwaysRelative = true, // Size relative to chart area
+                ClipToChartArea = area.Name, // Clip annotation to chart area
             };
             chart1.Annotations.Add(lineAnnotation);
         }
@@ -651,21 +658,27 @@ namespace Project3
         private bool isInit1 = true;
         private bool isInit2 = true;
 
-
+        // Handle the selection change event for the "UpWaves" list box
         private void listBox_UpWaves_SelectedIndexChanged(object sender, EventArgs e)
         {
+            // Prevent actions during initial load of list box
             if (isInit1)
             {
                 isInit1 = false;
                 return;
             }
-            chart1.Invalidate();
-            var wave = listBox_UpWaves.SelectedItem as Wave;
-            addWaveAnnotations(wave);
+
+            chart1.Invalidate(); // Invalidate the chart to refresh it
+            var wave = listBox_UpWaves.SelectedItem as Wave; // Get the selected wave from the list
+            addWaveAnnotations(wave); // Add wave annotations to the chart
+
+            // Set the start and current prices for the wave
             startPrice = (double)wave.startPrice;
             currentPrice = stepPrice = (double)wave.endPrice;
+
+            // Display Fibonacci levels for the wave
             display_FibLevels(startPrice, currentPrice, wave.startIndex, wave.endIndex);
-            chart1.Update();
+            chart1.Update(); // Update the chart
 
         }
 
