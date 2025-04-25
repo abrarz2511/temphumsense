@@ -1,4 +1,4 @@
-﻿namespace Project2
+﻿namespace Project3
 {
     partial class Form_ChartDisplay
     {
@@ -33,11 +33,10 @@
             System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
-            this.button_Refresh = new System.Windows.Forms.Button();
+            this.button_update = new System.Windows.Forms.Button();
             this.dateTimePicker_StartDate = new System.Windows.Forms.DateTimePicker();
             this.dateTimePicker_EndDate = new System.Windows.Forms.DateTimePicker();
             this.hScrollBar_Margin = new System.Windows.Forms.HScrollBar();
-            this.label_Margin = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.listBox_UpWaves = new System.Windows.Forms.ListBox();
@@ -52,6 +51,11 @@
             this.label3 = new System.Windows.Forms.Label();
             this.textBox_StepSize = new System.Windows.Forms.TextBox();
             this.button_StepSizeChanged = new System.Windows.Forms.Button();
+            this.openFileDialog_LoadTicker = new System.Windows.Forms.OpenFileDialog();
+            this.button_LoadTicker = new System.Windows.Forms.Button();
+            this.label4 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label_Margin = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.waveBindingSource)).BeginInit();
             this.SuspendLayout();
@@ -77,35 +81,36 @@
             series2.YValueMembers = "High, Low, Open, Close";
             series2.YValuesPerPoint = 4;
             this.chart1.Series.Add(series2);
-            this.chart1.Size = new System.Drawing.Size(1050, 305);
+            this.chart1.Size = new System.Drawing.Size(962, 306);
             this.chart1.TabIndex = 0;
             this.chart1.Text = "chart1";
             this.chart1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.chart1_MouseDown);
             this.chart1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.chart1_MouseMove);
             this.chart1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.chart1_MouseUp);
             // 
-            // button_Refresh
+            // button_update
             // 
-            this.button_Refresh.Location = new System.Drawing.Point(254, 390);
-            this.button_Refresh.Margin = new System.Windows.Forms.Padding(2);
-            this.button_Refresh.Name = "button_Refresh";
-            this.button_Refresh.Size = new System.Drawing.Size(89, 19);
-            this.button_Refresh.TabIndex = 1;
-            this.button_Refresh.Text = "Refresh/Clear";
-            this.button_Refresh.UseVisualStyleBackColor = true;
-            this.button_Refresh.Click += new System.EventHandler(this.button_Refresh_Click);
+            this.button_update.Location = new System.Drawing.Point(389, 375);
+            this.button_update.Margin = new System.Windows.Forms.Padding(2);
+            this.button_update.Name = "button_update";
+            this.button_update.Size = new System.Drawing.Size(71, 22);
+            this.button_update.TabIndex = 1;
+            this.button_update.Text = "Update";
+            this.button_update.UseVisualStyleBackColor = true;
+            this.button_update.Click += new System.EventHandler(this.button_Refresh_Click);
             // 
             // dateTimePicker_StartDate
             // 
-            this.dateTimePicker_StartDate.Location = new System.Drawing.Point(53, 390);
+            this.dateTimePicker_StartDate.Location = new System.Drawing.Point(135, 366);
             this.dateTimePicker_StartDate.Margin = new System.Windows.Forms.Padding(2);
             this.dateTimePicker_StartDate.Name = "dateTimePicker_StartDate";
             this.dateTimePicker_StartDate.Size = new System.Drawing.Size(151, 20);
             this.dateTimePicker_StartDate.TabIndex = 2;
+            this.dateTimePicker_StartDate.ValueChanged += new System.EventHandler(this.dateTimePicker_StartDate_ValueChanged);
             // 
             // dateTimePicker_EndDate
             // 
-            this.dateTimePicker_EndDate.Location = new System.Drawing.Point(380, 390);
+            this.dateTimePicker_EndDate.Location = new System.Drawing.Point(135, 401);
             this.dateTimePicker_EndDate.Margin = new System.Windows.Forms.Padding(2);
             this.dateTimePicker_EndDate.Name = "dateTimePicker_EndDate";
             this.dateTimePicker_EndDate.Size = new System.Drawing.Size(151, 20);
@@ -114,39 +119,30 @@
             // hScrollBar_Margin
             // 
             this.hScrollBar_Margin.LargeChange = 1;
-            this.hScrollBar_Margin.Location = new System.Drawing.Point(45, 335);
+            this.hScrollBar_Margin.Location = new System.Drawing.Point(54, 322);
             this.hScrollBar_Margin.Maximum = 4;
             this.hScrollBar_Margin.Minimum = 1;
             this.hScrollBar_Margin.Name = "hScrollBar_Margin";
-            this.hScrollBar_Margin.Size = new System.Drawing.Size(512, 21);
+            this.hScrollBar_Margin.Size = new System.Drawing.Size(800, 21);
             this.hScrollBar_Margin.TabIndex = 4;
             this.hScrollBar_Margin.Value = 1;
             this.hScrollBar_Margin.Scroll += new System.Windows.Forms.ScrollEventHandler(this.hScrollBar1_Scroll);
             // 
-            // label_Margin
-            // 
-            this.label_Margin.AutoSize = true;
-            this.label_Margin.Location = new System.Drawing.Point(214, 322);
-            this.label_Margin.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label_Margin.Name = "label_Margin";
-            this.label_Margin.Size = new System.Drawing.Size(13, 13);
-            this.label_Margin.TabIndex = 5;
-            this.label_Margin.Text = "1";
-            // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(587, 322);
+            this.label1.Location = new System.Drawing.Point(601, 472);
             this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(58, 13);
             this.label1.TabIndex = 8;
             this.label1.Text = "Up Waves";
+            this.label1.Click += new System.EventHandler(this.label1_Click);
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(770, 322);
+            this.label2.Location = new System.Drawing.Point(715, 473);
             this.label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(72, 13);
@@ -158,7 +154,7 @@
             this.listBox_UpWaves.DataSource = this.waveBindingSource;
             this.listBox_UpWaves.DisplayMember = "displayDate";
             this.listBox_UpWaves.FormattingEnabled = true;
-            this.listBox_UpWaves.Location = new System.Drawing.Point(559, 337);
+            this.listBox_UpWaves.Location = new System.Drawing.Point(572, 401);
             this.listBox_UpWaves.Margin = new System.Windows.Forms.Padding(2);
             this.listBox_UpWaves.Name = "listBox_UpWaves";
             this.listBox_UpWaves.Size = new System.Drawing.Size(122, 69);
@@ -167,14 +163,14 @@
             // 
             // waveBindingSource
             // 
-            this.waveBindingSource.DataSource = typeof(Project2.Wave);
+            this.waveBindingSource.DataSource = typeof(Project3.Wave);
             // 
             // listBox_DownWaves
             // 
             this.listBox_DownWaves.DataSource = this.waveBindingSource;
             this.listBox_DownWaves.DisplayMember = "displayDate";
             this.listBox_DownWaves.FormattingEnabled = true;
-            this.listBox_DownWaves.Location = new System.Drawing.Point(736, 338);
+            this.listBox_DownWaves.Location = new System.Drawing.Point(698, 402);
             this.listBox_DownWaves.Margin = new System.Windows.Forms.Padding(2);
             this.listBox_DownWaves.Name = "listBox_DownWaves";
             this.listBox_DownWaves.Size = new System.Drawing.Size(126, 69);
@@ -184,7 +180,7 @@
             // label_ConfLabe
             // 
             this.label_ConfLabe.AutoSize = true;
-            this.label_ConfLabe.Location = new System.Drawing.Point(884, 322);
+            this.label_ConfLabe.Location = new System.Drawing.Point(658, 350);
             this.label_ConfLabe.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label_ConfLabe.Name = "label_ConfLabe";
             this.label_ConfLabe.Size = new System.Drawing.Size(70, 13);
@@ -194,7 +190,7 @@
             // label_Confirmations
             // 
             this.label_Confirmations.AutoSize = true;
-            this.label_Confirmations.Location = new System.Drawing.Point(890, 338);
+            this.label_Confirmations.Location = new System.Drawing.Point(681, 366);
             this.label_Confirmations.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label_Confirmations.Name = "label_Confirmations";
             this.label_Confirmations.Size = new System.Drawing.Size(13, 13);
@@ -203,10 +199,10 @@
             // 
             // button_Simulate
             // 
-            this.button_Simulate.Location = new System.Drawing.Point(504, 449);
+            this.button_Simulate.Location = new System.Drawing.Point(747, 350);
             this.button_Simulate.Margin = new System.Windows.Forms.Padding(2);
             this.button_Simulate.Name = "button_Simulate";
-            this.button_Simulate.Size = new System.Drawing.Size(77, 27);
+            this.button_Simulate.Size = new System.Drawing.Size(77, 43);
             this.button_Simulate.TabIndex = 14;
             this.button_Simulate.Text = "Start";
             this.button_Simulate.UseVisualStyleBackColor = true;
@@ -214,10 +210,10 @@
             // 
             // button_Plus
             // 
-            this.button_Plus.Location = new System.Drawing.Point(659, 446);
+            this.button_Plus.Location = new System.Drawing.Point(572, 350);
             this.button_Plus.Margin = new System.Windows.Forms.Padding(2);
             this.button_Plus.Name = "button_Plus";
-            this.button_Plus.Size = new System.Drawing.Size(54, 29);
+            this.button_Plus.Size = new System.Drawing.Size(55, 21);
             this.button_Plus.TabIndex = 15;
             this.button_Plus.Text = "+";
             this.button_Plus.UseVisualStyleBackColor = true;
@@ -225,10 +221,10 @@
             // 
             // button_Minus
             // 
-            this.button_Minus.Location = new System.Drawing.Point(736, 446);
+            this.button_Minus.Location = new System.Drawing.Point(572, 375);
             this.button_Minus.Margin = new System.Windows.Forms.Padding(2);
             this.button_Minus.Name = "button_Minus";
-            this.button_Minus.Size = new System.Drawing.Size(50, 29);
+            this.button_Minus.Size = new System.Drawing.Size(55, 22);
             this.button_Minus.TabIndex = 16;
             this.button_Minus.Text = "-";
             this.button_Minus.UseVisualStyleBackColor = true;
@@ -242,15 +238,16 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(67, 456);
+            this.label3.Location = new System.Drawing.Point(51, 442);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(98, 13);
+            this.label3.Size = new System.Drawing.Size(73, 13);
             this.label3.TabIndex = 17;
-            this.label3.Text = "Enter Step Size: ($)";
+            this.label3.Text = " Step Size: ($)";
+            this.label3.Click += new System.EventHandler(this.label3_Click);
             // 
             // textBox_StepSize
             // 
-            this.textBox_StepSize.Location = new System.Drawing.Point(171, 455);
+            this.textBox_StepSize.Location = new System.Drawing.Point(130, 438);
             this.textBox_StepSize.Name = "textBox_StepSize";
             this.textBox_StepSize.Size = new System.Drawing.Size(100, 20);
             this.textBox_StepSize.TabIndex = 18;
@@ -259,7 +256,7 @@
             // 
             // button_StepSizeChanged
             // 
-            this.button_StepSizeChanged.Location = new System.Drawing.Point(278, 455);
+            this.button_StepSizeChanged.Location = new System.Drawing.Point(239, 438);
             this.button_StepSizeChanged.Name = "button_StepSizeChanged";
             this.button_StepSizeChanged.Size = new System.Drawing.Size(47, 23);
             this.button_StepSizeChanged.TabIndex = 19;
@@ -267,11 +264,64 @@
             this.button_StepSizeChanged.UseVisualStyleBackColor = true;
             this.button_StepSizeChanged.Click += new System.EventHandler(this.button_StepSizeChanged_Click);
             // 
+            // openFileDialog_LoadTicker
+            // 
+            this.openFileDialog_LoadTicker.DefaultExt = "CSV";
+            this.openFileDialog_LoadTicker.FileName = "ABBV-Day";
+            this.openFileDialog_LoadTicker.Filter = "All|*.csv|Month|*-Month.csv|Week|*-Week.csv|Day|*-Day.csv";
+            this.openFileDialog_LoadTicker.Multiselect = true;
+            this.openFileDialog_LoadTicker.ReadOnlyChecked = true;
+            this.openFileDialog_LoadTicker.ShowReadOnly = true;
+            this.openFileDialog_LoadTicker.FileOk += new System.ComponentModel.CancelEventHandler(this.openFileDialog_LoadTicker_FileOk);
+            // 
+            // button_LoadTicker
+            // 
+            this.button_LoadTicker.Location = new System.Drawing.Point(389, 434);
+            this.button_LoadTicker.Margin = new System.Windows.Forms.Padding(2);
+            this.button_LoadTicker.Name = "button_LoadTicker";
+            this.button_LoadTicker.Size = new System.Drawing.Size(71, 26);
+            this.button_LoadTicker.TabIndex = 0;
+            this.button_LoadTicker.Text = "Load Ticker";
+            this.button_LoadTicker.Click += new System.EventHandler(this.button_LoadTicker_Click);
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(69, 372);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(55, 13);
+            this.label4.TabIndex = 20;
+            this.label4.Text = "Start Date";
+            this.label4.Click += new System.EventHandler(this.label4_Click);
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(69, 408);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(52, 13);
+            this.label5.TabIndex = 21;
+            this.label5.Text = "End Date";
+            // 
+            // label_Margin
+            // 
+            this.label_Margin.AutoSize = true;
+            this.label_Margin.Location = new System.Drawing.Point(39, 330);
+            this.label_Margin.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label_Margin.Name = "label_Margin";
+            this.label_Margin.Size = new System.Drawing.Size(13, 13);
+            this.label_Margin.TabIndex = 5;
+            this.label_Margin.Text = "1";
+            // 
             // Form_ChartDisplay
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1050, 507);
+            this.BackColor = System.Drawing.SystemColors.ActiveBorder;
+            this.ClientSize = new System.Drawing.Size(962, 574);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.button_LoadTicker);
             this.Controls.Add(this.button_StepSizeChanged);
             this.Controls.Add(this.textBox_StepSize);
             this.Controls.Add(this.label3);
@@ -288,7 +338,7 @@
             this.Controls.Add(this.hScrollBar_Margin);
             this.Controls.Add(this.dateTimePicker_EndDate);
             this.Controls.Add(this.dateTimePicker_StartDate);
-            this.Controls.Add(this.button_Refresh);
+            this.Controls.Add(this.button_update);
             this.Controls.Add(this.chart1);
             this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Form_ChartDisplay";
@@ -303,11 +353,10 @@
         #endregion
 
         private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
-        private System.Windows.Forms.Button button_Refresh;
+        private System.Windows.Forms.Button button_update;
         private System.Windows.Forms.DateTimePicker dateTimePicker_StartDate;
         private System.Windows.Forms.DateTimePicker dateTimePicker_EndDate;
         private System.Windows.Forms.HScrollBar hScrollBar_Margin;
-        private System.Windows.Forms.Label label_Margin;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ListBox listBox_DownWaves;
@@ -322,5 +371,10 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox textBox_StepSize;
         private System.Windows.Forms.Button button_StepSizeChanged;
+        private System.Windows.Forms.OpenFileDialog openFileDialog_LoadTicker;
+        private System.Windows.Forms.Button button_LoadTicker;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label_Margin;
     }
 }

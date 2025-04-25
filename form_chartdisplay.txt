@@ -1,41 +1,31 @@
-﻿// Basic system types and functionalities
+
+// Using directive for basic system types and functionalities
 using System;
-
-// Non-generic collections
+// Using directive for non-generic collections
 using System.Collections;
-
-// Generic collections
+// Using directive for generic collections
 using System.Collections.Generic;
-
-// Component model and data binding
+// Using directive for component model and data binding
 using System.ComponentModel;
-
-// Data handling
+// Using directive for data handling
 using System.Data;
-
-// Drawing and graphics
+// Using directive for drawing and graphics
 using System.Drawing;
-
-// File input/output operations
+// Using directive for file input/output operations
 using System.IO;
-
-// LINQ query operations
+// Using directive for LINQ query operations
 using System.Linq;
-
-// Text manipulation
+// Using directive for text manipulation
 using System.Text;
-
-// Asynchronous programming
+// Using directive for asynchronous programming
 using System.Threading.Tasks;
-
-// Windows Forms
+// Using directive for Windows Forms
 using System.Windows.Forms;
-
-// Charting controls for Windows Forms
+// Using directive for charting controls
 using System.Windows.Forms.DataVisualization.Charting;
 
-//using namespace for the project 3
-namespace Project3
+//using namespace for the project
+namespace Project2
 {
 
     //// Partial class declaration for the main form, inheriting from Form
@@ -43,65 +33,54 @@ namespace Project3
     {
         
         public int count = 0;
-        List<Wave> waves;  /// List of up waves 
-        List<Wave> upwaves; // List of down waves 
+        List<Wave> waves;
+        /// List of waves that are up
+        List<Wave> upwaves;
+        // List of waves that are down
         List<Wave> downwaves;
-        public String Path;
-        public List<Candlestick> candlesticks;    // candlesticks filtered by date
+        public String filePath;
+        public List<Candlestick> candlesticks;
+        // List of candlesticks that are filtered by date
         public List<Candlestick> currentFilter;
         DATACANDLESTICK reader;
         public List<Smartcandlestick> peakValleyList;
         
-
-
         public Form_ChartDisplay()
         {
-            InitializeComponent(); // Initialize the form
-
-            // Set default date ranges for the date pickers
+            InitializeComponent();
+            // Set default date ranges
             dateTimePicker_StartDate.Value = new DateTime(2024, 2, 1);
             dateTimePicker_EndDate.Value = new DateTime(2024, 2, 29);
         }
 
-
-
-        // Load the ticker file upon button click
         private void button_LoadTicker_Click(object sender, EventArgs e)
         {
             openFileDialog_LoadTicker.ShowDialog();
         }
 
-
-
-
-
-
-
-        // Handle the event when the file is selected
         private void openFileDialog_LoadTicker_FileOk(object sender, CancelEventArgs e)
         {
             var fileNames = new List<string>(openFileDialog_LoadTicker.FileNames);
             if (fileNames.Count > 0)
             {
-                Path = fileNames[0];
+                filePath = fileNames[0];
                 LoadAndProcessFile();
             }
         }
 
-
-        // Load and process the file
         private void LoadAndProcessFile()
         {
-            reader = new DATACANDLESTICK(); //create stock reader class to do the file reading
+            //create stock reader class to do the file reading
+            reader = new DATACANDLESTICK();
 
-            loadAndDisplay();            //load and display the chart
+            //load and display the chart
+            loadAndDisplay();
 
-            peakValleyList = findPeakValley(currentFilter, 1); // Find the peaks and valleys
+            peakValleyList = findPeakValley(currentFilter, 1);
             Show();
             showAnnotations();
             updateWaves();
         }
-
         public Form_ChartDisplay(DateTime startDate, DateTime endDate, string fileName)
         {
 
@@ -111,7 +90,7 @@ namespace Project3
             InitializeComponent();
             dateTimePicker_StartDate.Value = startDate;//initilazing the value to the start date
             dateTimePicker_EndDate.Value = endDate;
-            Path = fileName;
+            filePath = fileName;
 
 
             loadAndDisplay();
@@ -125,23 +104,18 @@ namespace Project3
         }
 
 
-
-
-
-
-
         /// <summary>
-        /// Loads candlesticks from the specified file and returns them as a list.
+        /// read candlestick from the file and return the list
         /// </summary>
-        /// <param name="fileName">The name of the file to load.</param>
-        /// <returns>List of Candlesticks loaded from the file.</returns>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
         private List<Candlestick> LoadTicker(string fileName)
         {
             List<Candlestick> listofCandlesticks = reader.ReadCandlesticksFromFile(fileName);
-            // Get the first and second candlestick dates to check if list needs to be reversed
+            //geting the first and second candlestick date
             var first = listofCandlesticks[0].Date;
             var second = listofCandlesticks[1].Date;
-            // If the first date is later than the second, reverse the list
+            //if first > second, reverse list, return reversed list
             if (first > second)
             {
                 listofCandlesticks.Reverse();
@@ -150,27 +124,19 @@ namespace Project3
 
         }
 
-
-
-
-
-        // Load and display the candlesticks on the chart
+        
         public void loadAndDisplay()
         {
-            // Call LoadTicker to load the candlesticks from the file
-            candlesticks = LoadTicker(Path);
-            // Filter candlesticks based on the date range
+            //calling loadTIcker
+            candlesticks = LoadTicker(filePath);
+            // filter candlesticks
+
+            //get the chart ready to display
             displayStock();
         }
 
-
-
-
-
-
-
         /// <summary>
-        /// Filters candlesticks by the current date range and binds them to the chart.
+        /// filters candlestick by the current datetime picker values and binds the chart to the filtered list of candlesticks
         /// </summary>
         public void displayStock()
         {
@@ -295,107 +261,84 @@ namespace Project3
         }
 
 
-
-
-
-
-
-
         ///Find all peaks and valleys using the given margin
         public List<Smartcandlestick> findPeakValley(List<Candlestick> candlesticks, int margin)
         {
 
-            // Initialize a list to store peaks and valleys
+            //initialize a peak for the first and last candlesticks
             var peakList = new List<Smartcandlestick>();
-
-            // Initialize the first peak for the first candlestick
             var firstPeak = new Smartcandlestick();
-            firstPeak.index = 0;
-            firstPeak.peak = true; // Assume it's a peak initially
-            firstPeak.valley = true; // Assume it's a valley initially
-
-            // Initialize the last peak for the last candlestick
             var lastPeak = new Smartcandlestick();
+            firstPeak.index = 0;
             lastPeak.index = candlesticks.Count - 1;
-            lastPeak.peak = true; // Assume it's a peak initially
-            lastPeak.valley = true; // Assume it's a valley initially
-
-            // Get the count of candlesticks for later use
             int count = candlesticks.Count - 1;
+            firstPeak.peak = true;
+            firstPeak.valley = true;
 
-            // Check the first candlestick to see if it's a peak or valley
+            //check first candlestick
             for (int i = 1; i <= margin; i++)
             {
                 if (candlesticks[0].High < candlesticks[i].High)
                 {
-                    firstPeak.peak = false; // Not a peak if any candlestick in the margin is higher
+                    firstPeak.peak = false;//make it false 
                 }
                 if (candlesticks[0].Low > candlesticks[i].Low)
                 {
-                    firstPeak.valley = false; // Not a valley if any candlestick in the margin is lower
+                    firstPeak.valley = false;
                 }
             }
-
-            // If the first candlestick is a peak or valley, add it to the peakList
             if (firstPeak.peak || firstPeak.valley)
             {
-                firstPeak.date = candlesticks[0].Date; // Set the date for the first peak
-                peakList.Add(firstPeak); // Add the first peak to the list
+                firstPeak.date = candlesticks[0].Date;
+                peakList.Add(firstPeak); //add it to the list
             }
 
-            // Check for peaks and valleys for candlesticks in the middle
+            //check regular case
             for (int i = margin; i < candlesticks.Count - margin; i++)
             {
-                var newPeak = new Smartcandlestick(); // Initialize a new peak
+                var newPeak = new Smartcandlestick();
+                decimal high = candlesticks[i].High;//get the high value
+                decimal low = candlesticks[i].Low;
 
-                decimal high = candlesticks[i].High; // Get the high value of the current candlestick
-                decimal low = candlesticks[i].Low; // Get the low value of the current candlestick
-
-                newPeak.valley = true; // Assume it's a valley initially
-                newPeak.peak = true; // Assume it's a peak initially
-
-                // Check the surrounding candlesticks within the margin to determine if it's a peak or valley
+                newPeak.valley = true;
+                newPeak.peak = true;
                 for (int j = i - margin; j <= i + margin; j++)
                 {
-                    if (j == i) { continue; } // Skip the current candlestick itself
-
-                    // If any candlestick in the margin is higher than the current one, it can't be a peak
+                    //dont compare the same candlestick
+                    if (j == i) { continue; }
+                    //if any candlesticks in the margin are higher than it isnt a valley
                     if (candlesticks[j].High >= high) { newPeak.peak = false; }
-
-                    // If any candlestick in the margin is lower than the current one, it can't be a valley
                     if (candlesticks[j].Low <= low) { newPeak.valley = false; }
                 }
-
-                // If the candlestick is a peak or valley, add it to the peakList
+                //if candlestick is a peak or valley, add it to the peakList
                 if (newPeak.peak || newPeak.valley)
                 {
-                    newPeak.index = i; // Set the index for the new peak
-                    newPeak.date = candlesticks[i].Date; // Set the date for the new peak
-                    peakList.Add(newPeak); // Add the new peak to the list
+                    newPeak.index = i;
+                    newPeak.date = candlesticks[i].Date; 
+                    peakList.Add(newPeak);
                 }
             }
 
-            // Check the last candlestick to see if it's a peak or valley
+            //check last candlestick
+            lastPeak.peak = true;
+            lastPeak.valley = true;
             for (int i = 1; i <= margin; i++)
             {
                 if (candlesticks[count].High < candlesticks[count - i].High)
                 {
-                    lastPeak.peak = false; // Not a peak if any candlestick in the margin is higher
+                    lastPeak.peak = false;
                 }
                 if (candlesticks[count].Low > candlesticks[count - i].Low)
                 {
-                    lastPeak.valley = false; // Not a valley if any candlestick in the margin is lower
+                    lastPeak.valley = false;
                 }
             }
 
-            // If the last candlestick is a peak or valley, add it to the peakList
             if (lastPeak.peak || lastPeak.valley)
             {
-                lastPeak.date = candlesticks[count].Date; // Set the date for the last peak
-                peakList.Add(lastPeak); // Add the last peak to the list
+                lastPeak.date = candlesticks[count].Date;
+                peakList.Add(lastPeak);
             }
-
-            // Return the list of peaks and valleys
             return peakList;
         }
 
@@ -1146,20 +1089,28 @@ namespace Project3
         /// <param name="wave"></param>
         private void simulateTick(bool up, RectangleAnnotation wave)
         {
-            if (wave == null || currentFilter == null || currentFilter.Count == 0) return;  // Safety check
-
-            // Ensure waveStart and waveEnd are within valid range
-            if (waveStart < 0 || waveStart >= currentFilter.Count || waveEnd < 0 || waveEnd >= currentFilter.Count)
-            {
-                return; // Don't do anything if indices are invalid
-            }
-
+            //calculate range and increment price
             double range = Math.Abs(currentPrice - startPrice);
-            stepPrice += up ? stepSize : -stepSize;
+            //increment price depending on if it was an + tick or - tick
+            if (up)
+            {
+                stepPrice += stepSize;
+            }
+            else
+            {
+                stepPrice -= stepSize;
+            }
             double max = currentPrice + (range * 0.20);
             double min = currentPrice - (range * 0.20);
 
-            if (stepPrice > max) stepPrice = min;
+            //if tick goes over max, reset to min
+            if (stepPrice > max)
+            {
+                stepPrice = min;
+            }
+
+            //draw new annotations and new fib levels
+
             wave.Height = Math.Abs(startPrice - stepPrice);
             display_FibLevels(startPrice, stepPrice, waveStart, waveEnd);
         }
@@ -1195,26 +1146,6 @@ namespace Project3
         private void button_StepSizeChanged_Click(object sender, EventArgs e)
         {//parsing the step size from the text box
             stepSize = double.Parse(textBox_StepSize.Text);
-        }
-
-        private void dateTimePicker_StartDate_ValueChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label4_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label3_Click(object sender, EventArgs e)
-        {
-
         }
     }
 }

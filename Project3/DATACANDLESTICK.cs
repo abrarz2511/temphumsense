@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Project2
+namespace Project3
 {
-    internal class StockReader
+    internal class DATACANDLESTICK
     {
         public List<Candlestick> ReadCandlesticksFromFile(string filePath)
         {

@@ -8,7 +8,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.ToolTip;
 using System.Globalization;
 using System.Windows.Forms;
 
-namespace Project2
+namespace Project3
 {
     public class Candlestick
     {
