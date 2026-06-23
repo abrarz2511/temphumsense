@@ -59,13 +59,5 @@ Humidity: 56.3 %
 - Mobile application support
 - Alert notifications
 
-## License
-
-This project is licensed under the MIT License.
-
-## Author
-
-**Abrar Zahin**
-
 - GitHub: https://github.com/abrarz2511
 
